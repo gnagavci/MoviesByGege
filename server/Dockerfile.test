@@ -1,0 +1,26 @@
+FROM node:18-alpine
+
+# Install build dependencies for native modules and testing tools
+RUN apk add --no-cache python3 make g++ git wget
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install ALL dependencies and rebuild native modules
+RUN npm install && npm rebuild sqlite3
+
+# Copy source code
+COPY . .
+
+# Create test results directory
+RUN mkdir -p coverage
+
+# Default command runs tests
+CMD ["npm", "test"]
+
+# Health check for test container
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD npm run test --silent || exit 1

@@ -1,0 +1,85 @@
+services:
+  # Backend Test Container
+  backend-test:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile.test
+    container_name: movie-app-backend-test
+    environment:
+      - NODE_ENV=test
+      - TMDB_API_KEY=${TMDB_API_KEY}
+    volumes:
+      - ./server:/app
+      - /app/node_modules  # Prevent host node_modules interference
+    working_dir: /app
+    networks:
+      - test-network
+
+  # Frontend Test Container
+  frontend-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.test
+    container_name: movie-app-frontend-test
+    environment:
+      - VITE_API_BASE_URL=http://backend-test:3001/api
+    volumes:
+      - .:/app
+      - /app/node_modules  # Prevent host node_modules interference
+    working_dir: /app
+    networks:
+      - test-network
+
+  # Backend Test with Coverage
+  backend-coverage:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile.test
+    container_name: movie-app-backend-coverage
+    environment:
+      - NODE_ENV=test
+      - TMDB_API_KEY=${TMDB_API_KEY}
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+      - ./test-results/backend:/app/coverage  # Mount coverage output
+    command: npm run test:coverage
+    networks:
+      - test-network
+
+  # Frontend Test with Coverage
+  frontend-coverage:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.test
+    container_name: movie-app-frontend-coverage
+    environment:
+      - VITE_API_BASE_URL=http://backend-test:3001/api
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./test-results/frontend:/app/coverage  # Mount coverage output
+    command: npm run test:coverage
+    networks:
+      - test-network
+
+  # Test Results Reporter
+  test-reporter:
+    image: node:18-alpine
+    container_name: movie-app-test-reporter
+    volumes:
+      - ./test-results:/results
+      - ./scripts:/scripts
+    command: node /scripts/combine-reports.js
+    depends_on:
+      - backend-coverage
+      - frontend-coverage
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  test-results:

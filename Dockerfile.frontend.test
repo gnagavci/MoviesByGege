@@ -1,0 +1,22 @@
+FROM node:18-alpine
+
+# Install git for package installations
+RUN apk add --no-cache git
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install ALL dependencies with legacy peer deps to handle React 19 compatibility
+RUN npm install --legacy-peer-deps
+
+# Copy source code
+COPY . .
+
+# Create test results directory
+RUN mkdir -p coverage
+
+# Default command runs tests with explicit exit
+CMD ["npm", "run", "test", "--", "--run", "--reporter=verbose"]

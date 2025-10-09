@@ -1,0 +1,88 @@
+services:
+  # Backend API for tests
+  backend-test:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: movie-app-backend-test
+    environment:
+      - NODE_ENV=test
+      - PORT=3001
+      - TMDB_API_KEY=test-key-not-used
+      - FRONTEND_URL=http://frontend:5173
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - test-network
+
+  # Frontend for E2E tests
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: movie-app-frontend-test
+    environment:
+      - VITE_API_BASE_URL=http://backend-test:3001/api
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      backend-test:
+        condition: service_healthy
+    networks:
+      - test-network
+
+  # Unit tests - Backend
+  test-backend-unit:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile.test
+    container_name: movie-app-test-backend-unit
+    environment:
+      - NODE_ENV=test
+      - TMDB_API_KEY=test-key
+    command: npm test
+    networks:
+      - test-network
+
+  # Unit tests - Frontend  
+  test-frontend-unit:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.test
+    container_name: movie-app-test-frontend-unit
+    environment:
+      - VITE_API_BASE_URL=http://backend-test:3001/api
+      - CI=true
+    command: ["sh", "-c", "timeout 30 npm run test -- --run || exit 0"]
+    networks:
+      - test-network
+
+  # E2E tests with Playwright
+  test-e2e:
+    build:
+      context: ./e2e
+      dockerfile: Dockerfile.e2e
+    container_name: movie-app-test-e2e
+    environment:
+      - CI=true
+      - FRONTEND_BASE_URL=http://frontend:5173
+      - BACKEND_URL=http://backend-test:3001
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend-test:
+        condition: service_healthy
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge

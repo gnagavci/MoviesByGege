@@ -1,0 +1,50 @@
+{
+  "name": "my-first-react-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "test:docker": "docker compose -f docker-compose.test.yml up --build --abort-on-container-exit",
+    "test:backend": "docker-compose -f docker-compose.test.yml run --rm test-backend-unit npm test",
+    "test:frontend": "docker-compose -f docker-compose.test.yml run --rm test-frontend-unit npm test",
+    "test:e2e": "docker compose -f docker-compose.test.yml up --build backend-test frontend test-e2e --abort-on-container-exit",
+    "test:docker:all": "npm run test:docker:unit && npm run test:docker:e2e",
+    "test:docker:unit": "docker compose -f docker-compose.test.yml up --build test-backend-unit test-frontend-unit --abort-on-container-exit",
+    "test:docker:e2e": "docker compose -f docker-compose.test.yml up --build backend-test frontend test-e2e --abort-on-container-exit",
+    "test:docker:clean": "docker compose -f docker-compose.test.yml down -v && rm -rf test-results"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-use": "^17.5.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "@tailwindcss/vite": "^4.0.0-alpha.26",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/user-event": "^14.5.1",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "^1.6.1",
+    "@vitest/ui": "^1.1.0",
+    "eslint": "^9.15.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "globals": "^15.12.0",
+    "jsdom": "^23.2.0",
+    "tailwindcss": "^4.0.0-alpha.26",
+    "vite": "^6.0.1",
+    "vitest": "^1.6.1"
+  }
+}

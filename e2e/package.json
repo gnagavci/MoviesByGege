@@ -1,0 +1,22 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "main": "playwright.config.js",
+  "scripts": {
+    "test": "npx playwright test --config=playwright.config.js",
+    "test:local": "node test-local.js",
+    "test:debug": "npx playwright test --config=playwright.config.js --debug",
+    "test:headed": "npx playwright test --config=playwright.config.js --headed"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  },
+  "dependencies": {
+    "playwright": "^1.55.0",
+    "playwright-core": "^1.55.0"
+  },
+  "description": ""
+}
